@@ -2,22 +2,22 @@
 """
 Generate training data for fine-tuning Needle 3 on PyBot.
 
-Run this script to create a dataset of (message, tool, arguments) examples
-by testing PyBot's modules with various inputs.
+Each example is labelled with the category its message was written under (the keys of
+TEST_MESSAGES). PyBot's reply is recorded as `expected_reply` for reference only; it is not
+used to choose the tool, because PyBot module names do not map cleanly onto tools.
 
 Usage:
-    python training/generate_training_data.py > training_data.jsonl
+    python3 training/generate_training_data.py > training/training_data.jsonl
 """
 import json
-import sys
 import os
+import re
+import sys
 
-# Add parent directory to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from bot import runtime
+from bot import runtime  # noqa: E402
 
-# Test messages for each module/tool
 TEST_MESSAGES = {
     "name_store": [
         "my name is Alice",
@@ -44,27 +44,29 @@ TEST_MESSAGES = {
         "I swallowed poison",
     ],
     "chat": [
-        "hello",
         "how are you?",
         "what's up?",
-        "good morning",
         "hi there",
         "hey",
-        "good evening",
         "how's it going?",
         "nice to meet you",
         "what can you do?",
+        "I just got promoted!",
+        "I can't sleep",
+        "I'm hungry",
+        "do you like music?",
+        "what's your favorite color?",
+        "I'm learning to code",
+        "I want to travel to Japan",
     ],
     "greeting": [
+        "hello",
         "hello there",
-        "hi",
-        "hey",
         "good morning",
         "good afternoon",
         "good evening",
         "howdy",
         "greetings",
-        "what's happening",
         "yo",
     ],
     "question": [
@@ -94,7 +96,6 @@ TEST_MESSAGES = {
     "context_recall": [
         "what were we talking about?",
         "what did I say earlier?",
-        "remember my name?",
         "what did you say before?",
         "go back to what we were discussing",
         "what was I asking about?",
@@ -110,8 +111,6 @@ TEST_MESSAGES = {
         "thanks for your help",
         "many thanks",
         "cheers",
-        "ta",
-        "gracias",
     ],
     "goodbye": [
         "goodbye",
@@ -121,9 +120,7 @@ TEST_MESSAGES = {
         "good night",
         "see ya",
         "later",
-        "ciao",
         "farewell",
-        "until next time",
     ],
     "help_seeking": [
         "help me",
@@ -139,168 +136,49 @@ TEST_MESSAGES = {
     ],
 }
 
-# Additional varied messages for robustness
-EXTRA_MESSAGES = [
-    "My name is John and I need help",
-    "I'm feeling really down today",
-    "Can you tell me a story?",
-    "What's the meaning of life?",
-    "I just got promoted!",
-    "My dog died yesterday",
-    "I'm getting married next week",
-    "How do I fix a leaky faucet?",
-    "What should I cook for dinner tonight?",
-    "I can't sleep",
-    "I had a bad dream",
-    "My back hurts",
-    "I'm hungry",
-    "What's your favorite color?",
-    "Do you like music?",
-    "I'm learning to code",
-    "How do I learn Python?",
-    "What's the best programming language?",
-    "I want to travel to Japan",
-    "Recommend a good book",
+NAME_PATTERNS = [
+    r"my name is (\w+)",
+    r"i am (\w+)",
+    r"call me (\w+)",
+    r"this is (\w+)",
+    r"i'm (\w+)",
+    r"name's (\w+)",
 ]
 
 
-def get_module_for_message(text, memory=None):
-    """
-    Run PyBot on a message and return which module handled it.
-    """
-    if memory is None:
-        memory = {}
-    
-    result = runtime.turn(text, memory)
-    module = result.get("module", "unknown")
-    reply = result.get("reply", "")
-    
-    return module, reply
-
-
-def extract_args_from_message(text, tool_name):
-    """
-    Extract arguments based on the tool type.
-    """
-    args = {}
-    
+def extract_args(text, tool_name):
+    """Arguments that match the tool schema in training/finetune_needle3_kaggle.ipynb."""
     if tool_name == "name_store":
-        # Try to extract name from message
-        import re
-        patterns = [
-            r"my name is (\w+)",
-            r"i am (\w+)",
-            r"call me (\w+)",
-            r"this is (\w+)",
-            r"i'm (\w+)",
-            r"name's (\w+)",
-        ]
-        for pattern in patterns:
+        for pattern in NAME_PATTERNS:
             match = re.search(pattern, text.lower())
             if match:
-                args["name"] = match.group(1).capitalize()
-                break
-    
-    elif tool_name == "safety":
-        args["risk_detected"] = "yes"
-        args["situation"] = text
-    
-    elif tool_name in ["chat", "greeting", "question", "feeling", "thanks", "goodbye", "help_seeking"]:
-        args["message_type"] = tool_name
-        args["topic"] = text[:50]  # First 50 chars as topic
-    
-    elif tool_name == "context_recall":
-        args["action"] = "recall_context"
-    
-    return args
+                return {"name": match.group(1).capitalize()}
+        return {"name": ""}
+    if tool_name == "safety":
+        return {"situation": text}
+    return {"topic": text}
 
 
-def generate_training_examples():
-    """
-    Generate all training examples.
-    """
+def generate_examples():
     examples = []
-    memory = {}
-    
-    # Generate examples for each tool
     for tool_name, messages in TEST_MESSAGES.items():
         for msg in messages:
-            module, reply = get_module_for_message(msg, memory)
-            
-            # Map PyBot module to tool name
-            # PyBot has 100+ modules, we simplify to a few categories
-            mapped_tool = map_module_to_tool(module, tool_name)
-            args = extract_args_from_message(msg, mapped_tool)
-            
-            example = {
-                "messages": [
-                    {"role": "user", "content": msg}
-                ],
-                "tool_call": {
-                    "name": mapped_tool,
-                    "arguments": args
-                },
-                "expected_reply": reply,
-                "pybot_module": module
-            }
-            examples.append(example)
-    
-    # Add extra varied messages
-    for msg in EXTRA_MESSAGES:
-        module, reply = get_module_for_message(msg, memory)
-        mapped_tool = map_module_to_tool(module, "chat")
-        args = extract_args_from_message(msg, mapped_tool)
-        
-        example = {
-            "messages": [
-                {"role": "user", "content": msg}
-            ],
-            "tool_call": {
-                "name": mapped_tool,
-                "arguments": args
-            },
-            "expected_reply": reply,
-            "pybot_module": module
-        }
-        examples.append(example)
-    
+            memory = {}
+            result = runtime.turn(msg, memory)
+            examples.append({
+                "messages": [{"role": "user", "content": msg}],
+                "tool_call": {"name": tool_name, "arguments": extract_args(msg, tool_name)},
+                "expected_reply": result.get("reply", ""),
+                "pybot_module": result.get("module"),
+            })
     return examples
 
 
-def map_module_to_tool(module, default_tool):
-    """
-    Map PyBot's internal modules to simplified tool names.
-    """
-    # Safety-related modules
-    if module and any(x in module for x in ["safety", "urgent", "crisis"]):
-        return "safety"
-    
-    # Name-related modules
-    if module and any(x in module for x in ["name", "memory_store"]):
-        return "name_store"
-    
-    # Context recall
-    if module and any(x in module for x in ["recall", "context", "remember"]):
-        return "context_recall"
-    
-    # Greeting
-    if module and module in ["greeting", "chat"]:
-        return "greeting"
-    
-    # Default to chat
-    return default_tool
-
-
 def main():
-    print("Generating training data...", file=sys.stderr)
-    
-    examples = generate_training_examples()
-    
-    # Output as JSONL
+    examples = generate_examples()
     for example in examples:
         print(json.dumps(example))
-    
-    print(f"Generated {len(examples)} examples", file=sys.stderr)
+    print("Generated", len(examples), "examples", file=sys.stderr)
 
 
 if __name__ == "__main__":
