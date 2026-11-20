@@ -22,8 +22,11 @@ fn main() -> PyResult<()> {
     let home = find_home();
 
     // Use bundled Python if present, otherwise system Python.
+    // Supports both Python 3.11 and 3.12
     let bundled = home.join("python");
-    if bundled.join("lib").join("python3.11").is_dir() {
+    if bundled.join("lib").join("python3.12").is_dir() {
+        env::set_var("PYTHONHOME", &bundled);
+    } else if bundled.join("lib").join("python3.11").is_dir() {
         env::set_var("PYTHONHOME", &bundled);
     }
 
