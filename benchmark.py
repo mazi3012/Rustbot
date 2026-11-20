@@ -28,11 +28,13 @@ def measure_time(cmd_args: list[str], cwd: str, timeout: float = 15.0) -> tuple[
             timeout=timeout
         )
         elapsed = time.perf_counter() - start
+        if result.returncode != 0 or not result.stdout.strip():
+            raise RuntimeError(
+                f"{cmd_args[0]} failed (exit {result.returncode}): {result.stderr.strip()[:200]}"
+            )
         return elapsed, result.stdout.strip()
     except subprocess.TimeoutExpired:
-        return timeout, "TIMEOUT"
-    except Exception as e:
-        return timeout, f"ERROR: {e}"
+        raise RuntimeError(f"{cmd_args[0]} timed out after {timeout}s")
 
 def run_benchmark(pybot_dir: str, rustbot_dir: str, output_file: str = "benchmark_results.json"):
     """Run benchmark comparison between PyBot and Rustbot."""
