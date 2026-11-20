@@ -26,7 +26,7 @@ The portable folder (about 139 MB) runs anywhere, even on a machine without Pyth
 - **UTF-8 safe** - Works in any locale without crash on special characters
 - **Self-contained** - Binary, `bot/`, `pybot.py`, and Python runtime all bundled
 - **Fast startup** - Rust entry point, no interpreter startup overhead
-- **Needle 3 ready** - Supports Cactus Compute's Needle 3 model for intelligent tool calling
+- **Needle 3 ready** - Code ready for Cactus Compute's Needle 3 model
 
 ## Current status
 
@@ -36,33 +36,26 @@ The portable folder (about 139 MB) runs anywhere, even on a machine without Pyth
 | Portable folder | ✅ Tested with clean environment |
 | Performance | ~1.04x faster than PyBot |
 | PyBot code converted to Rust | ❌ Not yet - requires manual porting |
-| Needle 3 integration | ⚠️ Model loads, tool calling limited |
+| Needle 3 integration | ⚠️ Code ready, needs `needle-rs` dependency |
 
 ## Needle 3 Integration
 
-Rustbot includes support for [Needle 3](https://huggingface.co/CactusCompute/needle-3), a 121M parameter tool-calling model from Cactus Compute.
+Rustbot is designed to support [Needle 3](https://huggingface.co/CactusCompute/needle-3), a 121M parameter tool-calling model from Cactus Compute, for intelligent tool routing.
 
-### What it does
-- Loads the `needle3.cact` model from `weights/` folder
-- Provides structured tool calling capability
-- Extracts information from messages for PyBot modules
+### To use Needle 3
+1. Clone [needle-rs](https://github.com/Geekgineer/needle-rs) alongside Rustbot
+2. Add `needle-infer` dependency to `Cargo.toml`:
+   ```toml
+   needle-infer = { path = "../needle-rs/crates/needle-infer" }
+   ```
+3. Run `cargo build --release && scripts/package.sh`
+4. Download `needle3.cact` and place in `weights/` folder
+5. Run: `dist/rustbot/rustbot -p "your message"`
 
-### Current limitations
-- Needle 3 is a relatively small model (121M parameters)
-- Its tool calling capability is limited and may make mistakes
-- The model may confuse keywords with names in tool parameters
-- For reliable routing, PyBot's internal module system (`bot/modules/`) is used
-
-### Using Needle 3
-1. Download `needle3.cact` and place it in `weights/` folder
-2. Build and package: `cargo build --release && scripts/package.sh`
-3. Run: `dist/rustbot/rustbot -p "your message"`
-4. When Needle 3 loads, you'll see: `Loading Needle 3...` and `Needle 3 loaded`
-
-### Future improvements
-- Fine-tuning Needle 3 for PyBot's specific tool schema
-- Using Needle only for simple pattern matching (name extraction, keyword detection)
-- Combining Needle hints with PyBot's PRIORITY-based routing
+### Current state
+- Needle 3 integration code is ready in `src/needle.rs`
+- Tool descriptions are optimized for Needle 3's capabilities
+- The model provides routing hints that complement PyBot's PRIORITY-based routing
 
 ## Performance notes
 

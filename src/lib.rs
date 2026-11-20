@@ -1,1 +1,1 @@
-pub mod needle;
+pub fn dummy() {}
