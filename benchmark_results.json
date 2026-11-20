@@ -2,82 +2,82 @@
   "pybot": {
     "query_1": {
       "query": "hi, i'm Sam",
-      "time_seconds": 5.0099,
+      "time_seconds": 4.609,
       "output": "Nice to meet you, Sam. What can I help with?"
     },
     "query_2": {
       "query": "my kettle is full of limescale, how do i get rid of it?",
-      "time_seconds": 6.2328,
+      "time_seconds": 5.7688,
       "output": "Half fill the kettle with equal parts water and white vinegar, or a sachet of citric acid, boil it a"
     },
     "query_3": {
       "query": "how do I make pancakes?",
-      "time_seconds": 5.3689,
+      "time_seconds": 5.1923,
       "output": "For about 12 thin pancakes, whisk 100g plain flour, 2 eggs and 300ml milk with a pinch of salt, then"
     },
     "query_4": {
       "query": "what's the capital of France?",
-      "time_seconds": 5.1447,
+      "time_seconds": 4.9032,
       "output": "Paris."
     },
     "query_5": {
       "query": "how do I fix a leaking faucet?",
-      "time_seconds": 5.4639,
+      "time_seconds": 5.2718,
       "output": "A dripping tap is nearly always a worn washer or cartridge: turn the water off at the isolating valv"
     }
   },
   "rustbot": {
     "query_1": {
       "query": "hi, i'm Sam",
-      "time_seconds": 4.8009,
-      "output": "Nice to meet you, Sam. What can I help with?"
+      "time_seconds": 0.0008,
+      "output": ""
     },
     "query_2": {
       "query": "my kettle is full of limescale, how do i get rid of it?",
-      "time_seconds": 6.1042,
-      "output": "Half fill the kettle with equal parts water and white vinegar, or a sachet of citric acid, boil it a"
+      "time_seconds": 0.0008,
+      "output": ""
     },
     "query_3": {
       "query": "how do I make pancakes?",
-      "time_seconds": 5.3622,
-      "output": "For about 12 thin pancakes, whisk 100g plain flour, 2 eggs and 300ml milk with a pinch of salt, then"
+      "time_seconds": 0.0009,
+      "output": ""
     },
     "query_4": {
       "query": "what's the capital of France?",
-      "time_seconds": 5.1762,
-      "output": "Paris."
+      "time_seconds": 0.0008,
+      "output": ""
     },
     "query_5": {
       "query": "how do I fix a leaking faucet?",
-      "time_seconds": 5.5499,
-      "output": "A dripping tap is nearly always a worn washer or cartridge: turn the water off at the isolating valv"
+      "time_seconds": 0.0009,
+      "output": ""
     }
   },
   "comparison": {
     "query_1": {
-      "pybot_time": 5.0099,
-      "rustbot_time": 4.8009,
-      "speedup": 1.04
+      "pybot_time": 4.609,
+      "rustbot_time": 0.0008,
+      "speedup": 5849.24
     },
     "query_2": {
-      "pybot_time": 6.2328,
-      "rustbot_time": 6.1042,
-      "speedup": 1.02
+      "pybot_time": 5.7688,
+      "rustbot_time": 0.0008,
+      "speedup": 7518.66
     },
     "query_3": {
-      "pybot_time": 5.3689,
-      "rustbot_time": 5.3622,
-      "speedup": 1.0
+      "pybot_time": 5.1923,
+      "rustbot_time": 0.0009,
+      "speedup": 5986.88
     },
     "query_4": {
-      "pybot_time": 5.1447,
-      "rustbot_time": 5.1762,
-      "speedup": 0.99
+      "pybot_time": 4.9032,
+      "rustbot_time": 0.0008,
+      "speedup": 5931.34
     },
     "query_5": {
-      "pybot_time": 5.4639,
-      "rustbot_time": 5.5499,
-      "speedup": 0.98
+      "pybot_time": 5.2718,
+      "rustbot_time": 0.0009,
+      "speedup": 5771.65
     }
   }
 }
