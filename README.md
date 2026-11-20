@@ -49,3 +49,4 @@ Rustbot is significantly faster to start since the Rust binary loads instantly. 
 ## License
 
 Apache 2.0 (same as PyBot)
+## Rustbot
