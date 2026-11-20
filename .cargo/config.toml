@@ -1,0 +1,4 @@
+# Look for libpython in ./python/lib next to the executable, so a packaged folder runs without
+# LD_LIBRARY_PATH. $ORIGIN is expanded by the dynamic loader at run time, not by cargo.
+[target.x86_64-unknown-linux-gnu]
+rustflags = ["-C", "link-arg=-Wl,-rpath,$ORIGIN/python/lib"]

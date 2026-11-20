@@ -4,14 +4,23 @@ Rustbot is a Rust binary that runs [PyBot](https://github.com/huggingface/pybot)
 
 ## Build and run
 
-Requirements: Rust stable, Python 3.11 with its shared library (`libpython3.11.so`) on the loader path.
+Requirements to build: Rust stable and CPython 3.11 (`python3` on PATH).
 
 ```bash
 cargo build --release
-LD_LIBRARY_PATH=/path/to/python3.11/lib ./target/release/rustbot -p "hi, i'm Sam"
+./target/release/rustbot -p "hi, i'm Sam"
 ```
 
-`pybot.py` and `bot/` must stay in the crate root, next to `Cargo.toml`.
+### Portable folder
+
+`scripts/package.sh` builds a folder that runs on its own, without the build machine's Python install:
+
+```bash
+scripts/package.sh            # writes dist/rustbot/ (about 140 MB)
+dist/rustbot/rustbot -p "hi, i'm Sam"
+```
+
+The folder holds the binary, `pybot.py`, `bot/`, and a copy of the Python 3.11 shared library and standard library under `python/`. It can be moved anywhere. The binary finds `bot/` next to itself, or through `RUSTBOT_HOME` if that is set. It sets UTF-8 mode unless `PYTHONUTF8` is already set.
 
 ## Benchmark
 
