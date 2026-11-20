@@ -1805,7 +1805,7 @@ _FORMS_CACHE = {}
 # them, left the card at 10,013 with 104,749 questions already answered from it. So 50,000 is
 # five times what a real conversation reaches, and it is what stops a very long one from holding
 # a frozenset for every word it has ever seen.
-_FORMS_CACHE_KEEP = 50000
+_FORMS_CACHE_KEEP = 500000
 
 
 
@@ -2943,7 +2943,7 @@ def _phrase_found(forms, phrase):
 
 
 _PART_FORMS = {}
-_PART_FORMS_KEEP = 20000
+_PART_FORMS_KEEP = 200000
 
 
 def _part_forms(part):
