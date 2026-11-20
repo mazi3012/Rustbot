@@ -1,52 +1,31 @@
 # Rustbot
 
-A Rust-native wrapper for PyBot - a rule-based chatbot written in pure Python.
+Rustbot is a Rust binary that runs [PyBot](https://github.com/huggingface/pybot) through an embedded CPython (PyO3). The chatbot logic is still Python. No PyBot code has been converted to Rust yet.
 
-## Overview
+## Build and run
 
-Rustbot wraps the PyBot chatbot (640K lines of Python) with a fast Rust entry point. This provides:
-
-- **Zero runtime dependencies** - Single native binary
-- **Fast startup** - Rust wrapper loads instantly
-- **Full PyBot functionality** - All 640K lines of Python logic included
-
-## Usage
-
-```bash
-cd /projects/sandbox/Rustbot
-./target/release/rustbot -p "hi, i'm Sam"
-```
-
-## Building
+Requirements: Rust stable, Python 3.11 with its shared library (`libpython3.11.so`) on the loader path.
 
 ```bash
 cargo build --release
+LD_LIBRARY_PATH=/path/to/python3.11/lib ./target/release/rustbot -p "hi, i'm Sam"
 ```
+
+`pybot.py` and `bot/` must stay in the crate root, next to `Cargo.toml`.
 
 ## Benchmark
 
-Run the benchmark to compare PyBot vs Rustbot:
+`benchmark.py` runs PyBot and Rustbot on the same messages and fails if either run exits non-zero or prints nothing.
 
-```bash
-python3 benchmark.py
-```
+Measured on this machine, 5 runs each, `-p "test"`:
 
-## Files
+| Program | Average wall time |
+|---|---|
+| PyBot (`python3 -m pybot`) | 4.73 s |
+| Rustbot (PyO3) | 4.55 s |
 
-- `bot/` - PyBot's Python chatbot logic
-- `pybot.py` - PyBot entry point
-- `src/main.rs` - Rust wrapper
+About 1.04x. The startup and reply time are dominated by loading PyBot's Python modules, which Rustbot does not change.
 
-## Performance
+## What would make it faster
 
-| Metric | PyBot | Rustbot |
-|--------|-------|---------|
-| Startup | ~5 sec | ~0.01 sec |
-| Per-message | ~5.4 sec | ~5.4 sec |
-
-Rustbot is significantly faster to start since the Rust binary loads instantly. Once running, performance is similar since the actual chatbot logic is still in Python.
-
-## License
-
-Apache 2.0 (same as PyBot)
-## Rustbot
+Only converting PyBot's modules to Rust changes the timing. Rython (`rypip convert`) overflowed the stack on `bot/`, and Brevi rejects PyBot's dynamic code. Neither has produced a working Rust build yet.
